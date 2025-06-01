@@ -1,16 +1,131 @@
 import { useState, useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setopenSlider, setshowloader, setsliderData } from "@/redux/slices/urlslice";
-import { useSelector } from "react-redux";
+import { loginUser, registerUser } from "@/redux/slices/authSlice";
 import { SocialIcon } from 'react-social-icons'
 function Slider() {
   const { openSlider, loading, sliderData } = useSelector(state => state.allCart);
   const [animate, setAnimate] = useState(false);
   const dispatch = useDispatch();
+  
+  // Move all hook declarations to the top level
+  // Login form state
+  const [loginData, setLoginData] = useState({ email: '', password: '' });
+  const [rememberMe, setRememberMe] = useState(false);
+  const [loginError, setLoginError] = useState('');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  
+  // Register form state
+  const [registerData, setRegisterData] = useState({ name: '', email: '', password: '' });
+  const [registerError, setRegisterError] = useState('');
+  const [isRegistering, setIsRegistering] = useState(false);
+  
+  const { error: authError } = useSelector(state => state.auth);
+
   function handleClick(e) {
     e.preventDefault();
     dispatch(setopenSlider(false));
   }
+  
+  // Handle login form input changes
+  const handleLoginInputChange = (e) => {
+    const { name, value } = e.target;
+    setLoginData({
+      ...loginData,
+      [name]: value
+    });
+  };
+
+  // Handle registration form input changes
+  const handleRegisterInputChange = (e) => {
+    const { name, value } = e.target;
+    setRegisterData({
+      ...registerData,
+      [name]: value
+    });
+  };
+  
+  // Handle login submission
+  const handleLogin = async () => {
+    if (!loginData.email || !loginData.password) {
+      setLoginError('Email and password are required');
+      return;
+    }
+    
+    try {
+      setIsLoggingIn(true);
+      setLoginError('');
+      
+      console.log('Attempting login with:', loginData);
+      
+      // Dispatch login action
+      const result = await dispatch(loginUser(loginData)).unwrap();
+      console.log('Login successful:', result);
+      
+      // Close slider and redirect to dashboard on success
+      dispatch(setopenSlider(false));
+      
+      // Redirect to dashboard
+      setTimeout(() => {
+        window.location.href = '/Myurls';
+      }, 500);
+    } catch (error) {
+      console.error('Login error details:', error);
+      
+      // Provide more specific error messages based on the error
+      if (error?.detail) {
+        setLoginError(error.detail);
+      } else if (error?.non_field_errors) {
+        setLoginError(error.non_field_errors.join('. '));
+      } else if (error?.message) {
+        setLoginError(error.message);
+      } else {
+        setLoginError('Login failed. Please check your credentials and try again.');
+      }
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
+  
+  // Handle registration submission
+  const handleRegister = async () => {
+    if (!registerData.name || !registerData.email || !registerData.password) {
+      setRegisterError('All fields are required');
+      return;
+    }
+    
+    try {
+      setIsRegistering(true);
+      setRegisterError('');
+      
+      // Dispatch registration action
+      console.log('Attempting registration with:', registerData);
+      const result = await dispatch(registerUser(registerData)).unwrap();
+      console.log('Registration successful:', result);
+      
+      // Switch to login form on successful registration
+      setTimeout(() => {
+        signinkholo(); // Switch to login form
+      }, 500);
+      
+    } catch (error) {
+      console.error('Registration error:', error);
+      
+      // Provide more specific error messages based on the error
+      if (error?.detail) {
+        setRegisterError(error.detail);
+      } else if (error?.non_field_errors) {
+        setRegisterError(error.non_field_errors.join('. '));
+      } else if (error?.message) {
+        setRegisterError(error.message);
+      } else {
+        setRegisterError('Registration failed. Please try again.');
+      }
+    } finally {
+      setIsRegistering(false);
+    }
+  };
+  
   useEffect(() => {
     if (openSlider) {
       setTimeout(() => setAnimate(true), 10); // Small delay for animation
@@ -82,22 +197,59 @@ function Slider() {
           <p className="font-bungee text-[#087da8] font-medium text-3xl">Tiny URLs</p>
           <p className="text-gray-600">Welcome to TinyURL</p>
 
+          {/* Display register error if any */}
+          {registerError && (
+            <div className="w-[80%] mt-3 p-2 bg-red-100 text-red-700 border border-red-300 rounded text-sm">
+              {registerError}
+            </div>
+          )}
+          
+          {/* Display loading indicator during registration */}
+          {isRegistering && !registerError && (
+            <div className="w-[80%] mt-3 p-2 bg-green-100 text-green-700 border border-green-300 rounded text-sm flex items-center">
+              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-green-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Processing registration...
+            </div>
+          )}
+          
           {/* Input Fields */}
-          <input
-            type="text"
-            placeholder="Name"
-            className="w-[80%] mt-5 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#087da8]"
-          />
-          <input
-            type="email"
-            placeholder="Email"
-            className="w-[80%] mt-5 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#087da8]"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            className="w-[80%] mt-5 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#087da8]"
-          />
+          <form 
+            className="w-full flex flex-col items-center" 
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleRegister();
+            }}
+          >
+            <input
+              type="text"
+              name="name"
+              placeholder="Name"
+              value={registerData.name}
+              onChange={handleRegisterInputChange}
+              className="w-[80%] mt-5 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#087da8]"
+              autoComplete="name"
+            />
+            <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              value={registerData.email}
+              onChange={handleRegisterInputChange}
+              className="w-[80%] mt-5 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#087da8]"
+              autoComplete="email"
+            />
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={registerData.password}
+              onChange={handleRegisterInputChange}
+              className="w-[80%] mt-5 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#087da8]"
+              autoComplete="new-password"
+            />
 
           {/* Agreement Text */}
           <p className="w-[80%] mt-5 text-center text-s text-gray-900">
@@ -108,9 +260,22 @@ function Slider() {
           </p>
 
           {/* Create Account Button */}
-          <button className="w-[80%] mt-5 p-2 bg-[#087da8] text-white font-semibold rounded-md hover:bg-[#065c81] transition">
-            Create Account
+          <button 
+            type="submit" 
+            className="w-[80%] mt-5 p-2 bg-[#087da8] text-white font-semibold rounded-md hover:bg-[#065c81] transition flex items-center justify-center"
+            disabled={isRegistering}
+          >
+            {isRegistering ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Creating Account...
+              </>
+            ) : "Create Account"}
           </button>
+          </form>
 
           {/* Already a user? Log In */}
           <p className="mt-4 text-s text-gray-600">
@@ -137,6 +302,8 @@ function Slider() {
     );
   }
   else if (sliderData === "Sign In") {
+    // No useState hooks or handlers here - they're at the top level now
+
     return (
       <div
         className={`fixed top-0 right-0 w-full sm:w-[35%] h-full bg-white z-50 transform transition-transform duration-500 ${animate ? "translate-x-0" : "translate-x-full"
@@ -155,43 +322,105 @@ function Slider() {
         {/* Horizontal Line */}
         <hr className="border-t border-gray-300 w-full mt-5" />
 
-        {/* Sign Up Form */}
+        {/* Sign In Form */}
         <div className="w-full h-full mt-5 flex flex-col items-center justify-start">
           <p className="font-bungee text-[#087da8] font-medium text-3xl">Tiny URLs</p>
           <p className="text-gray-600">Welcome to TinyURL</p>
 
-          {/* Input Fields */}
-          <input
-            type="email"
-            placeholder="Email"
-            className="w-[80%] mt-6 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#087da8]"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            className="w-[80%] mt-6 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#087da8]"
-          />
+          {/* Display login error if any */}
+          {loginError && (
+            <div className="w-[80%] mt-3 p-2 bg-red-100 text-red-700 border border-red-300 rounded text-sm">
+              {loginError}
+            </div>
+          )}
+          
+          {/* Display success message when logging in successfully */}
+          {isLoggingIn && !loginError && (
+            <div className="w-[80%] mt-3 p-2 bg-green-100 text-green-700 border border-green-300 rounded text-sm flex items-center">
+              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-green-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Authenticating...
+            </div>
+          )}
+
+          {/* Input Fields - Wrap in form for better accessibility */}
+          <form 
+            className="w-full flex flex-col items-center" 
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleLogin();
+            }}
+          >
+            <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              value={loginData.email}
+              onChange={handleLoginInputChange}
+              className="w-[80%] mt-6 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#087da8]"
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  document.getElementById('password-input').focus();
+                }
+              }}
+              autoComplete="email"
+            />
+            <input
+              id="password-input"
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={loginData.password}
+              onChange={handleLoginInputChange}
+              className="w-[80%] mt-6 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#087da8]"
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleLogin();
+                }
+              }}
+              autoComplete="current-password"
+            />
 
           {/* Agreement Text */}
-          <div class="flex items-center justify-between w-[80%] mt-7">
-            <label class="flex items-center space-x-2 cursor-pointer">
-              <input type="checkbox" class="hidden peer" />
-              <div class="w-5 h-5 border-2 border-gray-400 rounded-md flex items-center justify-center peer-checked:bg-blue-500 peer-checked:border-blue-500 transition-all">
-                <svg class="hidden w-4 h-4 text-white peer-checked:block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                  <path fill-rule="evenodd" d="M9 16.2l-3.5-3.5-1.4 1.4L9 19 20 8l-1.4-1.4z" clip-rule="evenodd" />
+          <div className="flex items-center justify-between w-[80%] mt-7">
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input 
+                type="checkbox" 
+                className="hidden peer" 
+                checked={rememberMe}
+                onChange={() => setRememberMe(!rememberMe)}
+              />
+              <div className="w-5 h-5 border-2 border-gray-400 rounded-md flex items-center justify-center peer-checked:bg-blue-500 peer-checked:border-blue-500 transition-all">
+                <svg className="hidden w-4 h-4 text-white peer-checked:block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <path fillRule="evenodd" d="M9 16.2l-3.5-3.5-1.4 1.4L9 19 20 8l-1.4-1.4z" clipRule="evenodd" />
                 </svg>
               </div>
               <span>Remember Me</span>
             </label>
-            <a href="/forgot-password" class="text-blue-500 hover:underline">Forgot Password?</a>
+            <a href="/forgot-password" className="text-blue-500 hover:underline">Forgot Password?</a>
           </div>
 
-
-
-          {/* Create Account Button */}
-          <button className="w-[80%] mt-8 p-2 bg-[#087da8] text-white font-semibold rounded-md hover:bg-[#065c81] transition">
-            Sign In
+          {/* Sign In Button */}
+          <button 
+            type="submit"
+            disabled={isLoggingIn}
+            className="w-[80%] mt-8 p-2 bg-[#087da8] text-white font-semibold rounded-md hover:bg-[#065c81] transition flex items-center justify-center"
+          >
+            {isLoggingIn ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Signing In...
+              </>
+            ) : "Sign In"}
           </button>
+          </form>
 
           {/* Already a user? Log In */}
           <p className="mt-4 text-s text-gray-600">

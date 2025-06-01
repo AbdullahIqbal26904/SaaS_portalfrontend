@@ -1,12 +1,23 @@
 import { useState } from "react";
 import { setopenleftbar } from '@/redux/slices/urlslice';
 import { useDispatch, useSelector } from "react-redux";
+import { logoutUser } from '@/redux/slices/authSlice';
+import { useRouter } from 'next/router';
+
 export default function Navbar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { openleftbar } = useSelector(state => state.allCart);
+  const { user } = useSelector(state => state.auth);
   const dispatch = useDispatch();
+  const router = useRouter();
+  
   function closeleftbar() {
     dispatch(setopenleftbar(!openleftbar));
+  }
+  
+  function handleLogout() {
+    // The logoutUser thunk will handle the redirection, so we don't need router.push
+    dispatch(logoutUser({ redirect: true }));
   }
   return (
     <div
@@ -28,7 +39,10 @@ export default function Navbar() {
         className="w-[262px] h-10 bg-gray-200 rounded-lg px-4 outline-none"
       />
       <div className="flex items-center space-x-4 relative">
-        <button className="px-4 py-2 bg-[#007c8c] text-white  rounded-md">Upgrade</button>
+        <div className="flex items-center gap-2">
+          <button className="px-4 py-2 bg-[#007c8c] text-white rounded-md">Role: Admin</button>
+          <button className="px-4 py-2 border border-blue-500 text-blue-600 rounded-md">Help</button>
+        </div>
 
         <button className="text-white text-2xl bg-gray-800 font-bold rounded-full w-8 h-8">?</button>
         <div
@@ -38,9 +52,9 @@ export default function Navbar() {
         >
           <button className="flex items-center space-x-2 px-3 py-2 border rounded-lg">
             <div className="w-8 h-8 flex items-center justify-center bg-gray-300 rounded-full text-lg font-semibold">
-              A
+              {user?.full_name?.charAt(0) || 'U'}
             </div>
-            <span className="font-semibold">Abdullah Iqbal</span>
+            <span className="font-semibold">{user?.full_name || 'User'}</span>
           </button>
 
           {isDropdownOpen && (
@@ -50,15 +64,18 @@ export default function Navbar() {
                 <div className="text-sm text-gray-500">abdullah.iqbal1505@gmail.com</div>
               </div>
               <div className="p-4 border-b">
-                <div className="text-sm">o_3ios48upht</div>
-                <div className="text-xs text-gray-500">Free account</div>
-                <button className="mt-2 px-3 py-1 text-sm text-white bg-blue-500 rounded">Upgrade</button>
+                <div className="text-sm">Role: Root Admin</div>
+                <div className="text-xs text-gray-500">Last login: June 1, 2025</div>
+                <div className="flex gap-2 mt-2">
+                  <div className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded">Active</div>
+                  <div className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">Premium</div>
+                </div>
               </div>
               <ul className="p-2 text-sm">
+                <li className="p-2 hover:bg-gray-100 cursor-pointer">My Profile</li>
+                <li className="p-2 hover:bg-gray-100 cursor-pointer">Security Settings</li>
                 <li className="p-2 hover:bg-gray-100 cursor-pointer">Support</li>
-                <li className="p-2 hover:bg-gray-100 cursor-pointer">API Documentation</li>
-                <li className="p-2 hover:bg-gray-100 cursor-pointer">Webinars</li>
-                <li className="p-2 hover:bg-gray-100 cursor-pointer">Bitly Terms</li>
+                <li className="p-2 hover:bg-gray-100 cursor-pointer">Documentation</li>
                 <li className="p-2 hover:bg-gray-100 cursor-pointer text-red-500">Sign Out</li>
               </ul>
             </div>
