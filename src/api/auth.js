@@ -2,7 +2,7 @@ import apiClient from './client';
 
 export const login = (credentials) => {
   console.log('Login attempt with:', credentials);
-  return apiClient.post('/users/auth/login/', credentials)
+  return apiClient.post('/api/users/auth/login/', credentials)
     .catch(error => {
       console.error('Login API error:', error.response || error);
       throw error;
@@ -10,15 +10,21 @@ export const login = (credentials) => {
 };
 
 export const register = (userData) => {
-  return apiClient.post('/users/auth/register/', userData);
+  return apiClient.post('/api/users/auth/register/', userData);
+};
+
+// Register a customer under a reseller (requires authentication as a reseller admin)
+export const registerResellerCustomer = (userData) => {
+  console.log('Registering reseller customer with:', userData);
+  return apiClient.post('/api/users/auth/register/', userData);
 };
 
 export const getUserProfile = () => {
-  return apiClient.get('/users/profile/');
+  return apiClient.get('/api/users/profile/');
 };
 
 export const refreshToken = (refreshToken) => {
-  return apiClient.post('/token/refresh/', { refresh: refreshToken });
+  return apiClient.post('/api/token/refresh/', { refresh: refreshToken });
 };
 
 // Store tokens in localStorage

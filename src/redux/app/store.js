@@ -6,6 +6,7 @@ import departmentsReducer from '../slices/departmentsSlice';
 import packagesReducer from '../slices/packagesSlice';
 import subscriptionsReducer from '../slices/subscriptionsSlice';
 import usersReducer from '../slices/usersSlice';
+import resellersReducer from '../slices/resellersSlice';
 
 const store = configureStore({
     reducer: {
@@ -15,6 +16,7 @@ const store = configureStore({
         packages: packagesReducer,
         subscriptions: subscriptionsReducer,
         users: usersReducer,
+        resellers: resellersReducer,
     },
 });
 export default store;

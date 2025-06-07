@@ -16,9 +16,16 @@ function Slider() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   
   // Register form state
-  const [registerData, setRegisterData] = useState({ name: '', email: '', password: '' });
+  const [registerData, setRegisterData] = useState({ 
+    full_name: '', 
+    email: '', 
+    password: '',
+    reseller_id: null,
+    department_name: ''
+  });
   const [registerError, setRegisterError] = useState('');
   const [isRegistering, setIsRegistering] = useState(false);
+  const [isResellerRegistration, setIsResellerRegistration] = useState(false);
   
   const { error: authError } = useSelector(state => state.auth);
 
@@ -43,6 +50,18 @@ function Slider() {
       ...registerData,
       [name]: value
     });
+    
+    // When updating full_name for reseller registration, also update department_name 
+    // if it hasn't been manually edited
+    if (name === 'full_name' && isResellerRegistration) {
+      if (registerData.department_name === '' || registerData.department_name.includes('Department')) {
+        setRegisterData(prev => ({
+          ...prev,
+          [name]: value,
+          department_name: `${value}'s Department`
+        }));
+      }
+    }
   };
   
   // Handle login submission
@@ -89,8 +108,14 @@ function Slider() {
   
   // Handle registration submission
   const handleRegister = async () => {
-    if (!registerData.name || !registerData.email || !registerData.password) {
+    if (!registerData.full_name || !registerData.email || !registerData.password) {
       setRegisterError('All fields are required');
+      return;
+    }
+    
+    // For reseller registration, department_name is required
+    if (isResellerRegistration && !registerData.department_name) {
+      setRegisterError('Department name is required for reseller registration');
       return;
     }
     
@@ -98,15 +123,34 @@ function Slider() {
       setIsRegistering(true);
       setRegisterError('');
       
-      // Dispatch registration action
-      console.log('Attempting registration with:', registerData);
-      const result = await dispatch(registerUser(registerData)).unwrap();
+      // Prepare data based on registration type
+      const registrationData = {
+        full_name: registerData.full_name,
+        email: registerData.email,
+        password: registerData.password
+      };
+      
+      // Add reseller_id and department_name for reseller registration
+      if (isResellerRegistration && registerData.reseller_id) {
+        registrationData.reseller_id = registerData.reseller_id;
+        registrationData.department_name = registerData.department_name;
+      }
+      
+      console.log('Attempting registration with:', registrationData);
+      const result = await dispatch(registerUser(registrationData)).unwrap();
       console.log('Registration successful:', result);
       
-      // Switch to login form on successful registration
-      setTimeout(() => {
-        signinkholo(); // Switch to login form
-      }, 500);
+      // For reseller customers, redirect to dashboard directly
+      if (isResellerRegistration) {
+        setTimeout(() => {
+          window.location.href = '/Myurls';
+        }, 500);
+      } else {
+        // For direct customers, switch to login form
+        setTimeout(() => {
+          signinkholo(); // Switch to login form
+        }, 500);
+      }
       
     } catch (error) {
       console.error('Registration error:', error);
@@ -133,6 +177,31 @@ function Slider() {
       setAnimate(false);
     }
   }, [openSlider]);
+  
+  // Check for reseller ID in the URL when the component mounts
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const resellerId = params.get('reseller_id');
+      const companyName = params.get('company_name') || '';
+      
+      if (resellerId) {
+        setIsResellerRegistration(true);
+        setRegisterData(prev => ({
+          ...prev,
+          reseller_id: resellerId,
+          department_name: `${companyName ? companyName + ' ' : ''}Department`
+        }));
+        
+        if (sliderData !== "Sign Up") {
+          // Open the signup slider with a small delay
+          setTimeout(() => {
+            signupkholo();
+          }, 300);
+        }
+      }
+    }
+  }, []);
   function signupkholo() {
     dispatch(setopenSlider(false)); // Close the slider first
     dispatch(setsliderData("Sign Up"));
@@ -223,11 +292,17 @@ function Slider() {
               handleRegister();
             }}
           >
+            {isResellerRegistration && (
+              <div className="w-[80%] mt-3 p-3 bg-blue-50 border border-blue-200 rounded text-sm">
+                You are registering through a partner portal. Your account will be managed by your organization's administrator.
+              </div>
+            )}
+            
             <input
               type="text"
-              name="name"
-              placeholder="Name"
-              value={registerData.name}
+              name="full_name"
+              placeholder="Full Name"
+              value={registerData.full_name}
               onChange={handleRegisterInputChange}
               className="w-[80%] mt-5 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#087da8]"
               autoComplete="name"
@@ -250,6 +325,17 @@ function Slider() {
               className="w-[80%] mt-5 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#087da8]"
               autoComplete="new-password"
             />
+            
+            {isResellerRegistration && (
+              <input
+                type="text"
+                name="department_name"
+                placeholder="Department Name"
+                value={registerData.department_name}
+                onChange={handleRegisterInputChange}
+                className="w-[80%] mt-5 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#087da8]"
+              />
+            )}
 
           {/* Agreement Text */}
           <p className="w-[80%] mt-5 text-center text-s text-gray-900">

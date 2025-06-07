@@ -1,6 +1,6 @@
-function Footer() {
+function Footer({ className = "" }) {
     return (
-      <div className="fixed z-50 bottom-0 w-full bg-gray-800 font-montserrat space-x-2   h-8 flex items-center justify-start text-white text-sm">
+      <div className={`z-50 w-full bg-gray-800 font-montserrat space-x-2 h-8 flex items-center justify-start text-white text-sm ${className}`}>
         <span className="ml-6 font-bold text-md text-gray-400">Copyright © TinyURL LLC </span>
         <span className="ml-6 font-bold text-lg text-gray-400"> . </span>
         <a href="/" className="mx-2 font-bold text-md underline text-gray-400">Terms</a>

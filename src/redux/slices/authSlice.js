@@ -44,10 +44,27 @@ export const registerUser = createAsyncThunk(
   'auth/register',
   async (userData, { rejectWithValue }) => {
     try {
-      const response = await authApi.register(userData);
+      // Handle direct customer registration vs reseller customer registration
+      const isResellerRegistration = userData.reseller_id && userData.reseller_id > 0;
+      
+      let response;
+      if (isResellerRegistration) {
+        // If registering under a reseller, we use registerResellerCustomer
+        console.log('Registering as reseller customer with:', userData);
+        response = await authApi.registerResellerCustomer(userData);
+      } else {
+        // Direct customer registration
+        console.log('Registering as direct customer with:', userData);
+        response = await authApi.register(userData);
+      }
+      
+      // Store tokens in local storage
       authApi.storeAuthTokens(response.data.tokens);
+      
+      console.log('Registration successful, user data:', response.data.user);
       return response.data;
     } catch (error) {
+      console.error('Registration API error:', error.response || error);
       return rejectWithValue(error.response?.data || { message: 'Registration failed' });
     }
   }

@@ -1088,8 +1088,8 @@ export default function DashboardContent() {
   };
 
   return (
-    <div className={`bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen pt-16 md:pl-${openleftbar ? '64' : '16'} pl-4 pr-4 ml-auto w-full transition-all duration-300`}>
-      <div className="container mx-auto py-8">
+    <div className="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen w-full pt-8 px-6 overflow-y-auto max-h-[calc(100vh-64px)]">
+      <div className="w-full py-4">
         {/* Main Tabs */}
         <div className="flex mb-8 border-b-2 font-montserrat font-medium overflow-x-auto scrollbar-hide">
           <button

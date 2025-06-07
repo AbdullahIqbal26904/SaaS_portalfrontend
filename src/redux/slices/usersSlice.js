@@ -14,6 +14,18 @@ export const fetchUsers = createAsyncThunk(
   }
 );
 
+export const searchUsers = createAsyncThunk(
+  'users/search',
+  async ({ query = '', page = 1, limit = 10 }, { rejectWithValue }) => {
+    try {
+      const response = await usersApi.searchUsers(query, page, limit);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || { message: 'Failed to search users' });
+    }
+  }
+);
+
 export const fetchUserById = createAsyncThunk(
   'users/fetchById',
   async (id, { rejectWithValue }) => {
@@ -52,8 +64,15 @@ export const deleteUserById = createAsyncThunk(
 
 const initialState = {
   users: [],
+  searchResults: [],
   selectedUser: null,
   loading: false,
+  searching: false,
+  pagination: {
+    page: 1,
+    limit: 10,
+    total: 0
+  },
   error: null
 };
 
@@ -81,6 +100,25 @@ const usersSlice = createSlice({
       })
       .addCase(fetchUsers.rejected, (state, action) => {
         state.loading = false;
+        state.error = action.payload;
+      })
+      
+      // Search users
+      .addCase(searchUsers.pending, (state) => {
+        state.searching = true;
+        state.error = null;
+      })
+      .addCase(searchUsers.fulfilled, (state, action) => {
+        state.searching = false;
+        state.searchResults = action.payload.users;
+        state.pagination = {
+          page: action.payload.page,
+          limit: action.payload.limit,
+          total: action.payload.total
+        };
+      })
+      .addCase(searchUsers.rejected, (state, action) => {
+        state.searching = false;
         state.error = action.payload;
       })
       
@@ -140,6 +178,61 @@ const usersSlice = createSlice({
       });
   }
 });
+
+  extraReducers: (builder) => {
+    builder
+      // Fetch all users
+      .addCase(fetchUsers.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchUsers.fulfilled, (state, action) => {
+        state.loading = false;
+        state.users = action.payload;
+      })
+      .addCase(fetchUsers.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      
+      // Search users
+      .addCase(searchUsers.pending, (state) => {
+        state.searching = true;
+        state.error = null;
+      })
+      .addCase(searchUsers.fulfilled, (state, action) => {
+        state.searching = false;
+        state.searchResults = action.payload.users;
+        state.pagination = {
+          page: action.payload.page,
+          limit: action.payload.limit,
+          total: action.payload.total
+        };
+      })
+      .addCase(searchUsers.rejected, (state, action) => {
+        state.searching = false;
+        state.error = action.payload;
+      })
+      
+      // Fetch single user
+      .addCase(fetchUserById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchUserById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.selectedUser = action.payload;
+      })
+      .addCase(fetchUserById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      
+      // Other cases remain unchanged
+      // ...existing cases...
+      ;
+  }
+;
 
 export const { clearError, setSelectedUser } = usersSlice.actions;
 export default usersSlice.reducer;

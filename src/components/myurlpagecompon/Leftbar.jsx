@@ -38,7 +38,7 @@ function Leftbar() {
     }
 
     return (
-        <div className={`fixed flex items-center justify-center flex-col h-full bg-white border-r-2 ${openleftbar ? 'w-1/6' : 'w-16'}`}>
+        <div className={`fixed flex items-center justify-center flex-col h-full bg-white border-r-2 z-40 shadow-md transition-all duration-300 ease-in-out ${openleftbar ? 'w-1/6' : 'w-16'}`}>
             {/* Logo */}
             <div className={`absolute left-3 top-3 flex items-center ${openleftbar ? 'h-12' : "h-8"}`}>
                 <span className="text-blue-700 font-bold text-xl">SaaS</span>

@@ -20,7 +20,7 @@ const Navbar = () => {
         };
     }, []);
     return (
-        <div className="fixed w-full h-[80px] bg-[#031f39] z-50">
+        <div className="fixed w-full h-[80px] bg-[#031f39] z-50 top-0 left-0">
             <img className="absolute" src="/images/topleft.svg" alt="" />
             {
                 isMobile ? <ResponsiveNavbar /> :

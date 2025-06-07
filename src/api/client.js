@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 // Create axios instance
 const apiClient = axios.create({
@@ -43,7 +43,7 @@ apiClient.interceptors.response.use(
           }
           
           console.log('Attempting token refresh');
-          const response = await axios.post(`${API_URL}/token/refresh/`, {
+          const response = await axios.post(`${API_URL}/api/token/refresh/`, {
             refresh: refreshToken
           });
           

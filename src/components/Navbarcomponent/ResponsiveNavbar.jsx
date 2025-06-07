@@ -14,10 +14,6 @@ function ResponsiveNavbar() {
   ];
 
   function openSidebar(item){
-    if(item.name === "My URLs") {
-      window.location.href = '/Myurls';
-      return;
-    }
     if(item.name === "Plans") {
       window.location.href = '/plans';
       return;

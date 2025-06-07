@@ -1,27 +1,27 @@
 import apiClient from './client';
 
 export const createSubscription = (subscriptionData) => {
-  return apiClient.post('/services/subscribe/', subscriptionData);
+  return apiClient.post('/api/services/subscribe/', subscriptionData);
 };
 
 export const getAllSubscriptions = () => {
-  return apiClient.get('/services/subscriptions/');
+  return apiClient.get('/api/services/subscriptions/');
 };
 
 export const getSubscriptionById = (id) => {
-  return apiClient.get(`/services/subscriptions/${id}/`);
+  return apiClient.get(`/api/services/subscriptions/${id}/`);
 };
 
 export const updateSubscriptionStatus = (id, status) => {
-  return apiClient.patch(`/services/subscriptions/${id}/`, { status });
+  return apiClient.patch(`/api/services/subscriptions/${id}/`, { status });
 };
 
 export const grantServiceAccess = (subscriptionId, userId) => {
-  return apiClient.post(`/services/subscription-users/${subscriptionId}/`, {
+  return apiClient.post(`/api/services/subscription-users/${subscriptionId}/`, {
     user_id: userId
   });
 };
 
 export const revokeServiceAccess = (accessId) => {
-  return apiClient.delete(`/services/subscription-users/${accessId}/`);
+  return apiClient.delete(`/api/services/subscription-users/${accessId}/`);
 };
